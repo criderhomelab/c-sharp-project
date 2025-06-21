@@ -56,6 +56,8 @@ which bcp
 sqlcmd -?
 bcp -?
 
+exit
+
 # Confirm Working
 $ sqlcmd -S localhost -U SA -p
 
@@ -66,36 +68,39 @@ select name from sys.databases;
 go
 
 # Create a Database and User
-CREATE LOGIN Alex WITH PASSWORD='Myp@ssw0rd0987==+';
+CREATE LOGIN WebAppUser WITH PASSWORD='<password>';
 GO
 
-CREATE DATABASE AppDB;
+CREATE DATABASE WebAppDB;
 GO
 
-USE AppDB;
+USE WebAppDB;
 GO
 
-CREATE TABLE users (
-id INT PRIMARY KEY IDENTITY (1, 1),
-first_name VARCHAR (50) NOT NULL,
-last_name varchar(50) NOT NULL,
-email varchar(50),
-last_login DATE NOT NULL
+CREATE TABLE things (
+  id INT PRIMARY KEY IDENTITY (1, 1),
+  created_on DATETIME NOT NULL DEFAULT GETDATE(),
+  name VARCHAR (50) NOT NULL,
+  purpose VARCHAR(255) NOT NULL,
+  last_modified DATETIME NOT NULL
 );
 GO
 
-CREATE USER Alex FOR LOGIN Alex;
+SELECT sobjects.name FROM sysobjects sobjects WHERE sobjects.xtype = 'U'
 GO
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON users TO Alex;
+CREATE USER WebAppUser FOR LOGIN WebAppUser;
 GO
 
-$ sqlcmd -S localhost -U Alex -d AppDB -p
-
-INSERT INTO users (first_name, last_name, email, last_login) VALUES ('Alex', 'Seed', 'alex@howtoforge.local', '20221201');
+GRANT SELECT, INSERT, UPDATE, DELETE ON things TO WebAppUser;
 GO
 
-SELECT * FROM users;
+$ sqlcmd -S localhost -U WebAppUser -d AppDB -p
+
+INSERT INTO things (name, purpose, last_modified) VALUES ('WebAppUser', 'Web Application User', GETDATE());
+GO
+
+SELECT * FROM things;
 GO
 
 quit

@@ -1,0 +1,44 @@
+@page
+@model myWebApp.Pages.Things.DetailsModel
+@{
+    ViewData["Title"] = "Thing Details";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1>@ViewData["Title"]</h1>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h4>@Html.DisplayFor(model => model.Thing.Name)</h4>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Thing.Name)</dt>
+                        <dd class="col-sm-9">@Html.DisplayFor(model => model.Thing.Name)</dd>
+                        
+                        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Thing.Purpose)</dt>
+                        <dd class="col-sm-9">@Html.DisplayFor(model => model.Thing.Purpose)</dd>
+                        
+                        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Thing.CreatedOn)</dt>
+                        <dd class="col-sm-9">@Html.DisplayFor(model => model.Thing.CreatedOn)</dd>
+                        
+                        <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Thing.LastModified)</dt>
+                        <dd class="col-sm-9">@Html.DisplayFor(model => model.Thing.LastModified)</dd>
+                    </dl>
+                </div>
+                <div class="card-footer">
+                    <div class="btn-group">
+                        <a asp-page="./Edit" asp-route-id="@Model.Thing.Id" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a asp-page="./Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to List
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

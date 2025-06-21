@@ -13,6 +13,11 @@
 
 # Create a stage for building the application.
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+
+# Install ICU libraries for globalization support
+RUN apk add --no-cache icu-libs
+
 
 COPY . /source
 
@@ -43,10 +48,17 @@ RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
 # version (e.g., aspnet:7.0.10-alpine-3.18),
 # or SHA (e.g., mcr.microsoft.com/dotnet/aspnet@sha256:f3d99f54d504a21d38e4cc2f13ff47d67235efeeb85c109d3d1ff1808b38d034).
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS final
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+
+# Install ICU libraries for globalization support
+RUN apk add --no-cache icu-libs
+
+
 WORKDIR /app
 
 # Copy everything needed to run the app from the "build" stage.
 COPY --from=build /app .
+
 
 # Switch to a non-privileged user (defined in the base image) that the app will run under.
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
