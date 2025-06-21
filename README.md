@@ -13,8 +13,9 @@ A complete ASP.NET Core 8.0 web application with Docker support, demonstrating C
 7. [Security Implementation](#security-implementation)
 8. [Development Setup](#development-setup)
 9. [Production Deployment](#production-deployment)
-10. [Troubleshooting](#troubleshooting)
-11. [References](#references)
+10. [Deployment Structure](#deployment-structure)
+11. [Troubleshooting](#troubleshooting)
+12. [References](#references)
 
 ## 📝 Project Overview
 
@@ -75,6 +76,7 @@ This project implements a complete CRUD interface for managing "Things" in an AS
 
 2. **Build and Run**:
    ```bash
+   cd deployments/compose
    docker compose up --build
    ```
 
@@ -128,15 +130,15 @@ COPY --from=build /app .
 ENTRYPOINT ["dotnet", "myWebApp.dll"]
 ```
 
-**compose.yaml**:
+**compose.yaml** (located in `deployments/compose/`):
 ```yaml
 services:
   server:
     build:
-      context: .
+      context: ../../
       target: final
     env_file:
-      - ./src/.secret
+      - ../../.secret
     environment:
       - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
     ports:
@@ -375,7 +377,39 @@ $env:CS_MSSQL_CONN="Server=prod-server;Database=ProdDB;User Id=ProdUser;Password
   - **Name**: `CS_MSSQL_CONN`
   - **Value**: Your connection string
 
-## 🔍 Troubleshooting
+## � Deployment Structure
+
+The project has been organized with a dedicated deployment folder structure:
+
+### File Organization
+- **`deployments/compose/`**: Docker Compose configurations
+- **`deployments/k8s/`**: Future Kubernetes manifests
+- **`.secret`**: Database connection configuration (moved to workspace root)
+
+### Running from Deployment Directory
+All Docker operations should now be run from the deployment directory:
+
+```bash
+# Navigate to the compose deployment directory
+cd deployments/compose
+
+# Build and run
+docker compose up --build
+
+# Stop services
+docker compose down
+
+# View logs
+docker compose logs -f
+```
+
+### Migration from Root Directory
+If upgrading from a previous version:
+1. The `compose.yaml` file has moved from `/workspaces/compose.yaml` to `/workspaces/deployments/compose/compose.yaml`
+2. The `.secret` file has moved from `/workspaces/src/.secret` to `/workspaces/.secret`
+3. All relative paths in `compose.yaml` have been updated to work from the new location
+
+## �🔍 Troubleshooting
 
 ### Common Issues
 
@@ -410,6 +444,20 @@ RUN apk add --no-cache icu-libs
 rm -rf Migrations/
 dotnet ef migrations add InitialCreate
 dotnet ef database update
+```
+
+#### 5. **Deployment Directory Issues**
+```bash
+# If Docker Compose fails to find files:
+# 1. Ensure you're in the correct directory
+cd deployments/compose
+
+# 2. Verify file structure
+ls -la ../../.secret        # Should exist
+ls -la ../../Dockerfile     # Should exist
+
+# 3. Check compose.yaml paths are correct
+cat compose.yaml | grep context  # Should show: context: ../../
 ```
 
 ### Debug Connection Configuration
@@ -460,7 +508,11 @@ dotnet run
 
 ```
 /workspaces/
-├── compose.yaml                    # Docker Compose configuration
+├── .secret                        # Database connection configuration
+├── deployments/
+│   ├── compose/
+│   │   └── compose.yaml           # Docker Compose configuration
+│   └── k8s/                       # Kubernetes manifests (future)
 ├── Dockerfile                     # Multi-stage Docker build
 ├── README.md                      # This consolidated documentation
 └── src/

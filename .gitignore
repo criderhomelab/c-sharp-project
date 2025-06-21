@@ -18,4 +18,4 @@ bld/
 [Ll]ogs/
 
 # Application
-src/.secret
+.secret
