@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+echo "This script is a scratchpad for installing MS SQL Server and tools on Debian 12"
+echo "It is not meant to be run as a script"
+exit
+
 # From https://www.howtoforge.com/how-to-install-microsoft-sql-server-on-debian-12/
 
 # 1
@@ -57,6 +61,10 @@ sqlcmd -?
 bcp -?
 
 exit
+###############################
+# This is scratch for after setting up the server
+###############################
+
 
 # Confirm Working
 $ sqlcmd -S localhost -U SA -p
