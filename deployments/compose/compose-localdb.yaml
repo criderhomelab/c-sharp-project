@@ -53,14 +53,27 @@ services:
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=${LOCAL_SA_PASSWORD}
-    volumes:
-      - ./mssql/setup_mssql_things.sql:/setup_mssql_things.sql:ro
+    volumes: []
     command: >
       bash -c "
         echo 'Waiting for SQL Server to be ready...'
         sleep 5
-        echo 'Running database setup script...'
-        /opt/mssql-tools18/bin/sqlcmd -S mssql -U sa -P ${LOCAL_SA_PASSWORD} -No -C -v WEBAPP_USER_PASSWORD='${WEBAPP_USER_PASSWORD}' -i /setup_mssql_things.sql
+        echo 'Creating login and database...'
+        /opt/mssql-tools18/bin/sqlcmd -S mssql -U sa -P ${LOCAL_SA_PASSWORD} -No -C -Q \"CREATE LOGIN WebAppUser WITH PASSWORD='${WEBAPP_USER_PASSWORD}';\"
+        /opt/mssql-tools18/bin/sqlcmd -S mssql -U sa -P ${LOCAL_SA_PASSWORD} -No -C -Q \"CREATE DATABASE WebAppDB;\"
+        echo 'Creating table and user...'
+        /opt/mssql-tools18/bin/sqlcmd -S mssql -U sa -P ${LOCAL_SA_PASSWORD} -No -C -d WebAppDB -Q \"
+        CREATE TABLE things (
+          id INT PRIMARY KEY IDENTITY (1, 1),
+          created_on DATETIME NOT NULL DEFAULT GETDATE(),
+          name VARCHAR (50) NOT NULL,
+          purpose VARCHAR(255) NOT NULL,
+          last_modified DATETIME NOT NULL
+        );
+        CREATE USER WebAppUser FOR LOGIN WebAppUser;
+        GRANT SELECT, INSERT, UPDATE, DELETE ON things TO WebAppUser;
+        INSERT INTO things (name, purpose, last_modified) VALUES ('WebAppUser', 'Web Application User', GETDATE());
+        \"
         echo 'Database setup complete!'
       "
     restart: "no"
