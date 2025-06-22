@@ -1,0 +1,2 @@
+# This file ensures the security-reports directory is tracked in git
+# while all security scan results are ignored per .gitignore

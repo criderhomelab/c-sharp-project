@@ -20,5 +20,6 @@ bld/
 # Application
 .secret
 
-# Security scanning reports
-security-reports/
+# Security scanning reports - ignore all files but keep the directory
+security-reports/*
+!security-reports/.gitkeep

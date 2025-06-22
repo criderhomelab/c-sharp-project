@@ -86,6 +86,8 @@ run_trivy_scan() {
     
     local report_file="$REPORTS_DIR/trivy_${TIMESTAMP}.json"
     local summary_file="$REPORTS_DIR/trivy_${TIMESTAMP}_summary.txt"
+    local sbom_cyclonedx_file="$REPORTS_DIR/trivy_${TIMESTAMP}_sbom.cdx"
+    local sbom_spdx_file="$REPORTS_DIR/trivy_${TIMESTAMP}_sbom.spdx.json"
     
     # Run comprehensive scan with JSON output
     trivy image --format json --output "$report_file" "$IMAGE_NAME"
@@ -93,9 +95,17 @@ run_trivy_scan() {
     # Generate human-readable summary
     trivy image --format table "$IMAGE_NAME" > "$summary_file"
     
+    # Generate SBOM in CycloneDX format
+    trivy image --format cyclonedx --output "$sbom_cyclonedx_file" "$IMAGE_NAME"
+    
+    # Generate SBOM in SPDX JSON format
+    trivy image --format spdx-json --output "$sbom_spdx_file" "$IMAGE_NAME"
+    
     log_success "Trivy scan completed. Reports saved:"
     echo "  - JSON: $report_file"
     echo "  - Summary: $summary_file"
+    echo "  - SBOM (CycloneDX): $sbom_cyclonedx_file"
+    echo "  - SBOM (SPDX JSON): $sbom_spdx_file"
 }
 
 run_docker_scout_scan() {

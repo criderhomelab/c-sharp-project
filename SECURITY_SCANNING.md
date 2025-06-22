@@ -24,6 +24,7 @@ This directory contains scripts for comprehensive security scanning of Docker im
 ### Trivy
 - **Purpose**: Comprehensive vulnerability scanner
 - **Scans**: OS packages, language dependencies, secrets, misconfigurations
+- **SBOMs**: Generates Software Bill of Materials in CycloneDX and SPDX formats
 - **Install**: `./bin/install-trivy.sh`
 - **Scan**: `./bin/security-scan.sh trivy`
 
@@ -86,7 +87,7 @@ This directory contains scripts for comprehensive security scanning of Docker im
 
 Reports are generated in the `./security-reports/` directory (configurable) with timestamps:
 
-- **Trivy**: JSON + human-readable summary
+- **Trivy**: JSON + human-readable summary + SBOMs (CycloneDX & SPDX)
 - **Docker Scout**: SARIF + summary
 - **Snyk**: JSON + summary  
 - **Grype**: JSON + summary
@@ -96,6 +97,8 @@ Example report files:
 security-reports/
 ├── trivy_20240622_143022.json
 ├── trivy_20240622_143022_summary.txt
+├── trivy_20240622_143022_sbom.cdx
+├── trivy_20240622_143022_sbom.spdx.json
 ├── docker-scout_20240622_143045.json
 ├── docker-scout_20240622_143045_summary.txt
 ├── snyk_20240622_143110.json
@@ -118,6 +121,20 @@ security-reports/
 3. **Review Reports**: Don't just run scans, analyze the results
 4. **Update Tools**: Keep scanning tools updated for latest vulnerability data
 5. **CI/CD Integration**: Integrate these scripts into your build pipeline
+6. **SBOM Management**: Use generated SBOMs for supply chain security tracking
+
+## Software Bill of Materials (SBOM)
+
+Trivy automatically generates SBOMs in two industry-standard formats:
+
+- **CycloneDX**: Modern, comprehensive SBOM format (`.cdx`)
+- **SPDX JSON**: SPDX format in JSON (`.spdx.json`)
+
+SBOMs provide:
+- Complete inventory of software components
+- License information for compliance
+- Supply chain security visibility
+- Vulnerability tracking across dependencies
 
 ## Troubleshooting
 
