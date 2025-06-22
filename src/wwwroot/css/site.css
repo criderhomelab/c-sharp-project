@@ -16,3 +16,26 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* Sortable table header styles */
+.table th a {
+    color: inherit !important;
+    text-decoration: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.table th a:hover {
+    color: #f8f9fa !important;
+    opacity: 0.8;
+}
+
+.table th a i {
+    opacity: 0.7;
+    font-size: 0.8em;
+}
+
+.table th a:hover i {
+    opacity: 1;
+}
