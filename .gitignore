@@ -23,3 +23,5 @@ bld/
 # Security scanning reports - ignore all files but keep the directory
 security-reports/*
 !security-reports/.gitkeep
+
+.fake

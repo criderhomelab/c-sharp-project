@@ -1,7 +1,53 @@
 {
     // This should be the published version of ../devcontainers/builder/
     "name": "dotnet-dev",
-    "image": "ghcr.io/timcrider/devcontainers/dotnet-amd64:0.1.0",
+
+    // Image was for internal development, but for transparency I have provided a build that emulates my devcontainer
+    //"image": "ghcr.io/timcrider/devcontainers/dotnet-amd64:0.1.0",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "pomdtr.excalidraw-editor", // Excalidraw editor
+                "github.copilot", // Copilot code assist
+                "github.copilot-chat", // Copilot chat
+                "esbenp.prettier-vscode", // Prettier code formatter
+                "bierner.color-info", // JSX and CSS color information
+                "jpoissonnier.vscode-styled-components", // Styled components
+                "ms-azuretools.vscode-docker", // Docker integration and linting
+                "shardulm94.trailing-spaces", // Show trailing spaces
+                "vscode-icons-team.vscode-icons", // Better file extension icons
+
+// DotNet
+                "ms-dotnettools.csharp",
+                "ms-dotnettools.csdevkit",
+                "ms-dotnettools.dotnet-interactive-vscode",
+                "jebbs.plantuml",
+                "Ionide.Ionide-fsharp",
+                "ms-dotnettools.vscode-dotnet-runtime",
+                "ms-azuretools.vscode-containers"
+
+            ],
+            "settings": {
+                "files.eol": "\n",
+                "editor.tabSize": 2
+            }
+        }
+    },
+
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {"version": "latest"},
+        "ghcr.io/devcontainers/features/git:1": {"version": "latest"},
+//        "ghcr.io/devcontainers/features/github-cli:1": {"version": "latest"},
+//        "ghcr.io/devcontainers/features/go:1": {"version": "latest"},
+        "ghcr.io/devcontainers/features/python:1": {"version": "os-provided"}
+//        "ghcr.io/devcontainers/features/node:1": {"version": "lts"}
+    },
+
     "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces,type=bind",
     "workspaceFolder": "/workspaces",
     "remoteUser": "root",
