@@ -26,7 +26,8 @@ This project implements a complete CRUD interface for managing "Things" in an AS
 - **Complete CRUD Operations**: Create, Read, Update, Delete functionality
 - **Sortable Table Headers**: Click-to-sort functionality with visual indicators
 - **Secure Configuration**: Multi-tier configuration with User Secrets and Environment Variables
-- **Local Development Environment**: Complete SQL Server setup with Docker Compose
+- **Local Development Environment**: Complete SQL Server setup with Docker Compose (for developers without SQL Server access)
+- **Remote Database Support**: Connect to existing SQL Server instances
 - **Docker Support**: Full containerization with Alpine Linux
 - **Responsive UI**: Bootstrap 5 with Font Awesome icons
 - **Database Integration**: Entity Framework Core with SQL Server
@@ -38,7 +39,7 @@ This project implements a complete CRUD interface for managing "Things" in an AS
 - **Framework**: ASP.NET Core 8.0
 - **UI**: Razor Pages with Bootstrap 5
 - **ORM**: Entity Framework Core 8.0
-- **Database**: SQL Server (Remote)
+- **Database**: SQL Server (Docker or Remote)
 - **Containerization**: Docker with Alpine Linux
 - **Icons**: Font Awesome 6.0
 - **Language**: C# with .NET 8.0
@@ -47,9 +48,9 @@ This project implements a complete CRUD interface for managing "Things" in an AS
 
 > **⚠️ Security Note**: All password examples below use placeholder values (`YourSecurePassword123!`). **Replace these with your own secure passwords** before use. Never commit actual passwords to version control.
 
-### Local Development (Recommended)
+### Local Development with Docker SQL Server (Recommended)
 
-**Complete local development environment with SQL Server in Docker:**
+**Complete self-contained development environment with SQL Server in Docker:**
 
 1. **Setup Local Environment Files**:
    ```bash
@@ -80,7 +81,7 @@ This project implements a complete CRUD interface for managing "Things" in an AS
 
 ### Remote Database Development
 
-**For development with an existing remote SQL Server:**
+**For development with an existing remote SQL Server (if you have access to one):**
 
 1. **Configure Database Connection** (choose one):
    
@@ -102,20 +103,32 @@ This project implements a complete CRUD interface for managing "Things" in an AS
    dotnet run
    ```
 
-### Production Deployment
+### Remote Database with Docker (Alternative)
 
-1. **Set Environment Variable**:
+**If you have a remote SQL Server but want to run the app in Docker:**
+
+1. **Configure Database Connection**:
    ```bash
-   export CS_MSSQL_CONN="Server=your-server;Database=your-db;User Id=your-user;Password=your-password;TrustServerCertificate=true"
+   # Create .secret file with your remote database connection
+   echo "CS_MSSQL_CONN=Server=your-server;Database=your-db;User Id=your-user;Password=YourPassword;TrustServerCertificate=true" > .secret
    ```
 
-2. **Build and Run**:
+2. **Run with Docker Compose**:
    ```bash
    cd deployments/compose
    docker compose up --build
    ```
 
 3. **Access Application**: http://localhost:8080
+
+### Production Deployment
+
+**For actual production environments, use your organization's deployment practices:**
+
+1. **Environment Variables**: Configure `CS_MSSQL_CONN` through your deployment system
+2. **Container Registry**: Push to your organization's container registry
+3. **Orchestration**: Deploy using Kubernetes, Docker Swarm, or cloud services
+4. **Security**: Use proper secrets management (Azure Key Vault, AWS Secrets Manager, etc.)
 
 ## 🔄 Configuration Management
 
@@ -139,7 +152,9 @@ The application uses a **cascading configuration system** with the following pri
 
 ## 🐳 Docker Setup
 
-### Local Development with Docker Compose
+### Local Development with Docker SQL Server
+
+**For developers who cannot stand up their own SQL Server or want a complete self-contained environment:**
 
 The project includes a complete local development environment with SQL Server:
 
@@ -205,7 +220,9 @@ volumes:
   mssql_data:
 ```
 
-### Production Docker Setup
+### Remote Database with Docker
+
+**For connecting to an existing remote SQL Server while running the app in Docker:**
 
 **compose.yaml** (located in `deployments/compose/`):
 ```yaml
@@ -221,6 +238,8 @@ services:
     ports:
       - 8080:8080
 ```
+
+> **Note**: This setup requires a `.secret` file with your remote database connection string. It's designed for developers who have access to a remote SQL Server but want to run the application in Docker.
 
 ### Issues Fixed in Docker Configuration
 
@@ -532,17 +551,17 @@ The project has been organized with a comprehensive deployment folder structure:
 
 ### File Organization
 - **`deployments/compose/`**: Docker Compose configurations
-  - **`compose-localdb.yaml`**: Local development with SQL Server
-  - **`compose.yaml`**: Production deployment with remote database
+  - **`compose-localdb.yaml`**: Self-contained development environment with Docker SQL Server
+  - **`compose.yaml`**: Remote database development (for those with existing SQL Server access)
   - **`mssql/setup_mssql_things.sql`**: Automated database initialization script
 - **`deployments/k8s/`**: Future Kubernetes manifests
-- **`.local`**: Local development environment variables (for Docker Compose)
-- **`.local.sh`**: Local development environment variables (for shell export)
-- **`.secret`**: Production database connection configuration
+- **`.local`**: Environment variables for local development with Docker SQL Server
+- **`.local.sh`**: Environment variables for local development (shell export format)
+- **`.secret`**: Remote database connection configuration
 
 ### Environment Files
 
-**Local Development (.local)**:
+**Docker SQL Server Development (.local)**:
 ```bash
 CS_MSSQL_CONN=Server=mssql;Database=WebAppDB;User Id=WebAppUser;Password=${WEBAPP_USER_PASSWORD};TrustServerCertificate=true
 LOCAL_SA_PASSWORD=YourSecurePassword123!
@@ -550,19 +569,19 @@ SA_PASSWORD=YourSecurePassword123!
 WEBAPP_USER_PASSWORD=YourSecurePassword123!
 ```
 
-**Production (.secret)**:
+**Remote Database Development (.secret)**:
 ```bash
-CS_MSSQL_CONN=Server=your-prod-server;Database=your-prod-db;User Id=your-user;Password=your-password;TrustServerCertificate=true
+CS_MSSQL_CONN=Server=your-remote-server;Database=your-db;User Id=your-user;Password=your-password;TrustServerCertificate=true
 ```
 
 ### Running from Deployment Directory
 
-**Local Development:**
+**Docker SQL Server Development:**
 ```bash
 # Navigate to the compose deployment directory
 cd deployments/compose
 
-# Start local environment with SQL Server
+# Start self-contained environment with Docker SQL Server
 docker compose -f compose-localdb.yaml up --build
 
 # View logs
@@ -572,12 +591,12 @@ docker compose -f compose-localdb.yaml logs -f
 docker compose -f compose-localdb.yaml down
 ```
 
-**Production Deployment:**
+**Remote Database Development:**
 ```bash
 # Navigate to the compose deployment directory
 cd deployments/compose
 
-# Build and run with remote database
+# Run app in Docker connected to remote database
 docker compose up --build
 
 # Stop services
