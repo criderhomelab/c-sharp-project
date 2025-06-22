@@ -17,8 +17,11 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
-# Application
+# Application Secrets
 .secret
+.secret.sh
+.local
+.local.sh
 
 # Security scanning reports - ignore all files but keep the directory
 security-reports/*

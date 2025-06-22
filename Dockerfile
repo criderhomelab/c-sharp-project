@@ -18,7 +18,6 @@ ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 # Install ICU libraries for globalization support
 RUN apk add --no-cache icu-libs
 
-
 COPY . /source
 
 WORKDIR /source/src
@@ -53,12 +52,10 @@ ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 # Install ICU libraries for globalization support
 RUN apk add --no-cache icu-libs
 
-
 WORKDIR /app
 
 # Copy everything needed to run the app from the "build" stage.
 COPY --from=build /app .
-
 
 # Switch to a non-privileged user (defined in the base image) that the app will run under.
 # See https://docs.docker.com/go/dockerfile-user-best-practices/

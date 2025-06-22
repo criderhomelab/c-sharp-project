@@ -24,11 +24,14 @@ This project implements a complete CRUD interface for managing "Things" in an AS
 ### Key Features
 
 - **Complete CRUD Operations**: Create, Read, Update, Delete functionality
+- **Sortable Table Headers**: Click-to-sort functionality with visual indicators
 - **Secure Configuration**: Multi-tier configuration with User Secrets and Environment Variables
+- **Local Development Environment**: Complete SQL Server setup with Docker Compose
 - **Docker Support**: Full containerization with Alpine Linux
 - **Responsive UI**: Bootstrap 5 with Font Awesome icons
 - **Database Integration**: Entity Framework Core with SQL Server
 - **Production Ready**: Environment-specific configurations
+- **Password Security**: Environment variable-based password management
 
 ## 🛠️ Technology Stack
 
@@ -42,18 +45,48 @@ This project implements a complete CRUD interface for managing "Things" in an AS
 
 ## 🚀 Quick Start
 
-### Local Development
+> **⚠️ Security Note**: All password examples below use placeholder values (`YourSecurePassword123!`). **Replace these with your own secure passwords** before use. Never commit actual passwords to version control.
 
-1. **Clone and Setup**:
+### Local Development (Recommended)
+
+**Complete local development environment with SQL Server in Docker:**
+
+1. **Setup Local Environment Files**:
    ```bash
-   cd src
-   dotnet restore
+   # Create environment files (if they don't exist)
+   touch /workspaces/.local
+   touch /workspaces/.local.sh
+   
+   # Add to .local (for Docker Compose):
+   echo "CS_MSSQL_CONN=Server=mssql;Database=WebAppDB;User Id=WebAppUser;Password=\${WEBAPP_USER_PASSWORD};TrustServerCertificate=true" >> /workspaces/.local
+   echo "LOCAL_SA_PASSWORD=YourSecurePassword123!" >> /workspaces/.local
+   echo "SA_PASSWORD=YourSecurePassword123!" >> /workspaces/.local
+   echo "WEBAPP_USER_PASSWORD=YourSecurePassword123!" >> /workspaces/.local
+   
+   # Add to .local.sh (for shell export):
+   echo "export CS_MSSQL_CONN='Server=mssql;Database=WebAppDB;User Id=WebAppUser;Password=YourSecurePassword123!;TrustServerCertificate=true'" >> /workspaces/.local.sh
+   echo "export LOCAL_SA_PASSWORD='YourSecurePassword123!'" >> /workspaces/.local.sh
+   echo "export SA_PASSWORD='YourSecurePassword123!'" >> /workspaces/.local.sh
+   echo "export WEBAPP_USER_PASSWORD='YourSecurePassword123!'" >> /workspaces/.local.sh
    ```
 
-2. **Configure Database Connection** (choose one):
+2. **Start Local Development Environment**:
+   ```bash
+   cd deployments/compose
+   docker compose -f compose-localdb.yaml up --build
+   ```
+
+3. **Access Application**: http://localhost:8080/Things
+
+### Remote Database Development
+
+**For development with an existing remote SQL Server:**
+
+1. **Configure Database Connection** (choose one):
    
    **Option A: User Secrets (Recommended for Development)**
    ```bash
+   cd src
    dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=your-server;Database=your-db;User Id=your-user;Password=your-password;TrustServerCertificate=true"
    ```
 
@@ -62,12 +95,14 @@ This project implements a complete CRUD interface for managing "Things" in an AS
    export CS_MSSQL_CONN="Server=your-server;Database=your-db;User Id=your-user;Password=your-password;TrustServerCertificate=true"
    ```
 
-3. **Run Application**:
+2. **Run Application**:
    ```bash
+   cd src
+   dotnet restore
    dotnet run
    ```
 
-### Docker Deployment
+### Production Deployment
 
 1. **Set Environment Variable**:
    ```bash
@@ -104,12 +139,98 @@ The application uses a **cascading configuration system** with the following pri
 
 ## 🐳 Docker Setup
 
+### Local Development with Docker Compose
+
+The project includes a complete local development environment with SQL Server:
+
+**compose-localdb.yaml** (located in `deployments/compose/`):
+```yaml
+services:
+  frontend:
+    build:
+      context: ../../
+      target: final
+    depends_on:
+      mssql-setup:
+        condition: service_completed_successfully
+    env_file:
+      - ../../.local
+    environment:
+      - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+    ports:
+      - 8080:8080
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    ports:
+      - 1433:1433
+    env_file:
+      - ../../.local
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${LOCAL_SA_PASSWORD}
+      - MSSQL_PID=Express
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $${SA_PASSWORD} -No -C -Q 'SELECT 1' || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    volumes:
+      - mssql_data:/var/opt/mssql
+
+  mssql-setup:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      mssql:
+        condition: service_healthy
+    env_file:
+      - ../../.local
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${LOCAL_SA_PASSWORD}
+    volumes:
+      - ./mssql/setup_mssql_things.sql:/setup_mssql_things.sql:ro
+    command: >
+      bash -c "
+        echo 'Waiting for SQL Server to be ready...'
+        sleep 5
+        echo 'Running database setup script...'
+        /opt/mssql-tools18/bin/sqlcmd -S mssql -U sa -P ${LOCAL_SA_PASSWORD} -No -C -v WEBAPP_USER_PASSWORD='${WEBAPP_USER_PASSWORD}' -i /setup_mssql_things.sql
+        echo 'Database setup complete!'
+      "
+    restart: "no"
+
+volumes:
+  mssql_data:
+```
+
+### Production Docker Setup
+
+**compose.yaml** (located in `deployments/compose/`):
+```yaml
+services:
+  server:
+    build:
+      context: ../../
+      target: final
+    env_file:
+      - ../../.secret
+    environment:
+      - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+    ports:
+      - 8080:8080
+```
+
 ### Issues Fixed in Docker Configuration
 
 - **✅ ICU Globalization**: Added `icu-libs` package for Alpine Linux
 - **✅ Connection String**: Proper environment variable handling
 - **✅ Multi-stage Build**: Optimized build process
 - **✅ Alpine Compatibility**: Full .NET globalization support
+- **✅ Local Database**: Complete SQL Server setup with automated initialization
+- **✅ Password Security**: Environment variable-based password management
+- **✅ Health Checks**: Proper service orchestration and dependency management
 
 ### Docker Files Structure
 
@@ -130,21 +251,6 @@ COPY --from=build /app .
 ENTRYPOINT ["dotnet", "myWebApp.dll"]
 ```
 
-**compose.yaml** (located in `deployments/compose/`):
-```yaml
-services:
-  server:
-    build:
-      context: ../../
-      target: final
-    env_file:
-      - ../../.secret
-    environment:
-      - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
-    ports:
-      - 8080:8080
-```
-
 ## 🗄️ Database Schema
 
 The application works with the following SQL Server table:
@@ -159,9 +265,52 @@ CREATE TABLE things (
 );
 ```
 
-### Database Setup Instructions
+### Automated Local Database Setup
 
-To set up the database and create a restricted user for the web application, follow these steps:
+The local development environment includes automated database initialization:
+
+**setup_mssql_things.sql** (located in `deployments/compose/mssql/`):
+```sql
+CREATE LOGIN WebAppUser WITH PASSWORD='$(WEBAPP_USER_PASSWORD)';
+GO
+
+CREATE DATABASE WebAppDB;
+GO
+
+USE WebAppDB;
+GO
+
+CREATE TABLE things (
+  id INT PRIMARY KEY IDENTITY (1, 1),
+  created_on DATETIME NOT NULL DEFAULT GETDATE(),
+  name VARCHAR (50) NOT NULL,
+  purpose VARCHAR(255) NOT NULL,
+  last_modified DATETIME NOT NULL
+);
+GO
+
+SELECT sobjects.name FROM sysobjects sobjects WHERE sobjects.xtype = 'U'
+GO
+
+CREATE USER WebAppUser FOR LOGIN WebAppUser;
+GO
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON things TO WebAppUser;
+GO
+
+INSERT INTO things (name, purpose, last_modified) VALUES ('WebAppUser', 'Web Application User', GETDATE());
+GO
+```
+
+**Security Features:**
+- **🔐 Password Abstraction**: Uses `$(WEBAPP_USER_PASSWORD)` variable substitution
+- **🛡️ Least Privilege**: WebAppUser only has CRUD permissions on the `things` table
+- **🚫 No Admin Rights**: Restricted user cannot modify server settings
+- **📊 Database Scoped**: User only has access to the `WebAppDB` database
+
+### Manual Database Setup Instructions
+
+To set up the database manually on a remote server, follow these steps:
 
 #### 1. Connect as Administrator
 
@@ -174,7 +323,7 @@ sqlcmd -S your-server-name -U SA -p
 
 ```sql
 -- Create a login for the web application
-CREATE LOGIN WebAppUser WITH PASSWORD='YourSecurePassword!123';
+CREATE LOGIN WebAppUser WITH PASSWORD='YourSecurePassword123!';
 GO
 
 -- Create the database
@@ -241,7 +390,7 @@ quit
 After creating the user, use this connection string format:
 
 ```
-Server=your-server-name;Database=WebAppDB;User Id=WebAppUser;Password=YourSecurePassword!123;TrustServerCertificate=true
+Server=your-server-name;Database=WebAppDB;User Id=WebAppUser;Password=YourSecurePassword123!;TrustServerCertificate=true
 ```
 
 ### Entity Framework Model
@@ -345,13 +494,13 @@ dotnet ef migrations remove
 
 ```bash
 # Linux/macOS
-export CS_MSSQL_CONN="Server=prod-server;Database=ProdDB;User Id=ProdUser;Password=SecurePassword;TrustServerCertificate=true"
+export CS_MSSQL_CONN="Server=prod-server;Database=ProdDB;User Id=ProdUser;Password=YourProductionPassword;TrustServerCertificate=true"
 
 # Windows Command Prompt
-set CS_MSSQL_CONN=Server=prod-server;Database=ProdDB;User Id=ProdUser;Password=SecurePassword;TrustServerCertificate=true
+set CS_MSSQL_CONN=Server=prod-server;Database=ProdDB;User Id=ProdUser;Password=YourProductionPassword;TrustServerCertificate=true
 
 # Windows PowerShell
-$env:CS_MSSQL_CONN="Server=prod-server;Database=ProdDB;User Id=ProdUser;Password=SecurePassword;TrustServerCertificate=true"
+$env:CS_MSSQL_CONN="Server=prod-server;Database=ProdDB;User Id=ProdUser;Password=YourProductionPassword;TrustServerCertificate=true"
 ```
 
 ### Docker Production Deployment
@@ -379,21 +528,56 @@ $env:CS_MSSQL_CONN="Server=prod-server;Database=ProdDB;User Id=ProdUser;Password
 
 ## � Deployment Structure
 
-The project has been organized with a dedicated deployment folder structure:
+The project has been organized with a comprehensive deployment folder structure:
 
 ### File Organization
 - **`deployments/compose/`**: Docker Compose configurations
+  - **`compose-localdb.yaml`**: Local development with SQL Server
+  - **`compose.yaml`**: Production deployment with remote database
+  - **`mssql/setup_mssql_things.sql`**: Automated database initialization script
 - **`deployments/k8s/`**: Future Kubernetes manifests
-- **`.secret`**: Database connection configuration (moved to workspace root)
+- **`.local`**: Local development environment variables (for Docker Compose)
+- **`.local.sh`**: Local development environment variables (for shell export)
+- **`.secret`**: Production database connection configuration
+
+### Environment Files
+
+**Local Development (.local)**:
+```bash
+CS_MSSQL_CONN=Server=mssql;Database=WebAppDB;User Id=WebAppUser;Password=${WEBAPP_USER_PASSWORD};TrustServerCertificate=true
+LOCAL_SA_PASSWORD=YourSecurePassword123!
+SA_PASSWORD=YourSecurePassword123!
+WEBAPP_USER_PASSWORD=YourSecurePassword123!
+```
+
+**Production (.secret)**:
+```bash
+CS_MSSQL_CONN=Server=your-prod-server;Database=your-prod-db;User Id=your-user;Password=your-password;TrustServerCertificate=true
+```
 
 ### Running from Deployment Directory
-All Docker operations should now be run from the deployment directory:
 
+**Local Development:**
 ```bash
 # Navigate to the compose deployment directory
 cd deployments/compose
 
-# Build and run
+# Start local environment with SQL Server
+docker compose -f compose-localdb.yaml up --build
+
+# View logs
+docker compose -f compose-localdb.yaml logs -f
+
+# Stop services
+docker compose -f compose-localdb.yaml down
+```
+
+**Production Deployment:**
+```bash
+# Navigate to the compose deployment directory
+cd deployments/compose
+
+# Build and run with remote database
 docker compose up --build
 
 # Stop services
@@ -508,13 +692,20 @@ dotnet run
 
 ```
 /workspaces/
-├── .secret                        # Database connection configuration
+├── .local                         # Local development environment variables (Docker Compose)
+├── .local.sh                      # Local development environment variables (shell export)
+├── .secret                        # Production database connection configuration
+├── .gitignore                     # Git ignore rules (excludes .local* and .secret*)
 ├── deployments/
 │   ├── compose/
-│   │   └── compose.yaml           # Docker Compose configuration
+│   │   ├── compose.yaml           # Production Docker Compose configuration
+│   │   ├── compose-localdb.yaml   # Local development with SQL Server
+│   │   └── mssql/
+│   │       ├── Dockerfile         # SQL Server container setup
+│   │       └── setup_mssql_things.sql # Database initialization script
 │   └── k8s/                       # Kubernetes manifests (future)
 ├── Dockerfile                     # Multi-stage Docker build
-├── README.md                      # This consolidated documentation
+├── README.md                      # This comprehensive documentation
 └── src/
     ├── myWebApp.csproj            # Project file with dependencies
     ├── Program.cs                 # Application startup with cascading config
@@ -526,10 +717,26 @@ dotnet run
     │   └── Thing.cs               # Entity model
     ├── Migrations/                # EF Core migrations
     ├── Pages/
-    │   ├── Things/                # CRUD pages for Things
+    │   ├── Things/
+    │   │   ├── Index.cshtml       # Sortable table with Things list
+    │   │   ├── Index.cshtml.cs    # Server-side sorting logic
+    │   │   ├── Create.cshtml      # Create new Thing
+    │   │   ├── Edit.cshtml        # Edit existing Thing
+    │   │   ├── Delete.cshtml      # Delete Thing
+    │   │   └── Details.cshtml     # View Thing details
     │   └── Shared/
     │       └── _Layout.cshtml     # Main layout with navigation
-    └── wwwroot/                   # Static web assets
+    └── wwwroot/
+        ├── css/
+        │   └── site.css           # Custom styles including sortable headers
+        ├── js/
+        │   └── site.js            # Custom JavaScript
+        └── lib/                   # External libraries (Bootstrap, jQuery, FontAwesome)
 ```
 
-This application demonstrates modern ASP.NET Core development practices with secure configuration management, Docker containerization, and production-ready deployment patterns.
+This application demonstrates modern ASP.NET Core development practices with:
+- **Secure configuration management** with environment variables and user secrets
+- **Local development environment** with automated SQL Server setup
+- **Sortable table interface** with server-side processing
+- **Docker containerization** for both development and production
+- **Production-ready deployment patterns** with proper security practices
