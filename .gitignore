@@ -19,3 +19,6 @@ bld/
 
 # Application
 .secret
+
+# Security scanning reports
+security-reports/
