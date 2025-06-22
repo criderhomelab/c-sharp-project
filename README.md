@@ -575,7 +575,6 @@ CS_MSSQL_CONN=Server=your-remote-server;Database=your-db;User Id=your-user;Passw
 ```
 
 ### Running from Deployment Directory
-
 **Docker SQL Server Development:**
 ```bash
 # Navigate to the compose deployment directory
@@ -689,73 +688,47 @@ dotnet user-secrets remove "ConnectionStrings:DefaultConnection"
 dotnet run
 ```
 
-## 📚 References
+## Troubleshooting Docker Issues
 
-### Documentation
-- [Docker's .NET Guide](https://docs.docker.com/language/dotnet/)
-- [ASP.NET Core Configuration](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/)
-- [Entity Framework Core](https://docs.microsoft.com/en-us/ef/core/)
-- [User Secrets](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets)
+### Common Issues and Solutions
 
-### Related Repositories
-- [dotnet-docker samples](https://github.com/dotnet/dotnet-docker/tree/main/samples)
-- [Remote Try DotNet](https://github.com/microsoft/vscode-remote-try-dotnet)
+#### "OCI runtime create failed: runc create failed: ... broken pipe"
+**Symptom**: Docker containers fail to start with broken pipe errors, especially on Apple Silicon.
 
-### Database Resources
-- [MS SQL Server Docker](https://learn.microsoft.com/en-us/sql/linux/quickstart-install-connect-docker)
-- [Docker Getting Started](https://docs.docker.com/go/get-started-sharing/)
+**Solution**: 
+1. Switch to DooD configuration in `devcontainer.json`
+2. Ensure Docker Desktop is updated to the latest version
+3. Increase Docker Desktop memory allocation (8GB+ recommended)
 
----
+#### Volume Mount Issues
+**Symptom**: Files not found or permission errors when mounting volumes.
 
-## 📄 File Structure
+**Solution**:
+- Verify file paths exist on the host system
+- Check Docker Desktop file sharing settings
+- Consider embedding configuration directly in compose files for complex setups
 
-```
-/workspaces/
-├── .local                         # Local development environment variables (Docker Compose)
-├── .local.sh                      # Local development environment variables (shell export)
-├── .secret                        # Production database connection configuration
-├── .gitignore                     # Git ignore rules (excludes .local* and .secret*)
-├── deployments/
-│   ├── compose/
-│   │   ├── compose.yaml           # Production Docker Compose configuration
-│   │   ├── compose-localdb.yaml   # Local development with SQL Server
-│   │   └── mssql/
-│   │       ├── Dockerfile         # SQL Server container setup
-│   │       └── setup_mssql_things.sql # Database initialization script
-│   └── k8s/                       # Kubernetes manifests (future)
-├── Dockerfile                     # Multi-stage Docker build
-├── README.md                      # This comprehensive documentation
-└── src/
-    ├── myWebApp.csproj            # Project file with dependencies
-    ├── Program.cs                 # Application startup with cascading config
-    ├── appsettings.json           # Base configuration
-    ├── appsettings.Production.json # Production configuration
-    ├── Data/
-    │   └── ApplicationDbContext.cs # EF Core DbContext
-    ├── Models/
-    │   └── Thing.cs               # Entity model
-    ├── Migrations/                # EF Core migrations
-    ├── Pages/
-    │   ├── Things/
-    │   │   ├── Index.cshtml       # Sortable table with Things list
-    │   │   ├── Index.cshtml.cs    # Server-side sorting logic
-    │   │   ├── Create.cshtml      # Create new Thing
-    │   │   ├── Edit.cshtml        # Edit existing Thing
-    │   │   ├── Delete.cshtml      # Delete Thing
-    │   │   └── Details.cshtml     # View Thing details
-    │   └── Shared/
-    │       └── _Layout.cshtml     # Main layout with navigation
-    └── wwwroot/
-        ├── css/
-        │   └── site.css           # Custom styles including sortable headers
-        ├── js/
-        │   └── site.js            # Custom JavaScript
-        └── lib/                   # External libraries (Bootstrap, jQuery, FontAwesome)
-```
+#### Environment Variables Not Loading
+**Symptom**: Docker Compose services fail due to missing environment variables.
 
-This application demonstrates modern ASP.NET Core development practices with:
-- **Secure configuration management** with environment variables and user secrets
-- **Local development environment** with automated SQL Server setup
-- **Sortable table interface** with server-side processing
-- **Docker containerization** for both development and production
-- **Production-ready deployment patterns** with proper security practices
+**Solution**:
+- Ensure `.local.sh` is sourced before running docker-compose: `source .local.sh && docker-compose up`
+- Verify environment variables are exported in `.local.sh`
+- Check that `.local` file contains required values
+
+#### Container Startup Timeouts
+**Symptom**: Database or application containers fail to start within expected time.
+
+**Solution**:
+- Increase healthcheck intervals in compose files
+- Monitor container logs: `docker-compose logs -f [service-name]`
+- Ensure sufficient system resources are available
+
+### Getting Help
+
+If you encounter issues not covered here:
+1. Check the container logs: `docker-compose logs`
+2. Verify your platform-specific configuration
+3. Consider switching between DinD and DooD configurations
+4. Review the commit history for platform-specific fixes
+````
