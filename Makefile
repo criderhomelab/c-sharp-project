@@ -111,7 +111,7 @@ env-check:
 		echo "$(GREEN)📋 Using: Full stack with local database$(NC)"; \
 		if [ ! -f ".local" ]; then \
 			$(call print_error,".local file required for local database setup"); \
-			echo "$(YELLOW)💡 Create .local with SA_PASSWORD and MSSQL_SA_PASSWORD$(NC)"; \
+			echo "$(YELLOW)💡 Create .local with required environment variables$(NC)"; \
 			exit 1; \
 		fi; \
 	else \
@@ -124,29 +124,104 @@ env-check:
 	fi
 	$(call print_success,"Environment configuration validated")
 
-## Setup development environment
+## Setup development environment with detailed configuration
 setup: env-check
 	$(call print_status,"Setting up development environment...")
-	@if [ ! -f .local ]; then \
-		echo "Creating .local environment file..."; \
-		echo "SA_PASSWORD=SecurePass123!" > .local; \
-		echo "MSSQL_SA_PASSWORD=SecurePass123!" >> .local; \
+	@echo ""
+	@echo "$(BLUE)🔧 Environment Configuration Overview:$(NC)"
+	@echo ""
+	@echo "$(YELLOW)📁 Configuration Files:$(NC)"
+	@echo "  - $(GREEN).local$(NC)     - Docker Compose environment variables"
+	@echo "  - $(GREEN).local.sh$(NC)  - Shell environment variables (for local development)"
+	@echo ""
+	@echo "$(YELLOW)🔐 Required Environment Variables:$(NC)"
+	@echo ""
+	@echo "$(GREEN)CS_MSSQL_CONN$(NC) - Complete SQL Server connection string"
+	@echo "  Purpose: Used by the ASP.NET Core application to connect to the database"
+	@echo "  Format:  Server=HOST;Database=DB;User Id=USER;Password=PASS;TrustServerCertificate=true"
+	@echo "  Example: Server=mssql;Database=WebAppDB;User Id=WebAppUser;Password=***HIDDEN***;TrustServerCertificate=true"
+	@echo ""
+	@echo "$(GREEN)SA_PASSWORD$(NC) - SQL Server System Administrator password"
+	@echo "  Purpose: Master password for SQL Server instance (used by container startup)"
+	@echo "  Usage:   Database container initialization and administrative operations"
+	@echo "  Security: Must meet SQL Server complexity requirements (8+ chars, mixed case, numbers, symbols)"
+	@echo ""
+	@echo "$(GREEN)WEBAPP_USER_PASSWORD$(NC) - Application database user password"
+	@echo "  Purpose: Password for the dedicated WebAppUser database account"
+	@echo "  Usage:   Used by setup scripts to create application-specific database user"
+	@echo "  Scope:   Limited permissions (read/write to application tables only)"
+	@echo ""
+	@echo "$(YELLOW)🏗️ Infrastructure Components:$(NC)"
+	@echo "  - $(BLUE)mssql$(NC)        - SQL Server 2022 Express container"
+	@echo "  - $(BLUE)mssql-setup$(NC)  - Database initialization and user creation"
+	@echo "  - $(BLUE)frontend$(NC)     - ASP.NET Core web application"
+	@echo ""
+	@if [ -f .local ]; then \
+		echo "$(GREEN)[OK] .local file exists$(NC)"; \
+		echo "$(YELLOW)📋 Current configuration:$(NC)"; \
+		echo ""; \
+		echo "  $(GREEN)CS_MSSQL_CONN$(NC)"; \
+		echo "    └─ Connection: $$(grep '^CS_MSSQL_CONN=' .local | cut -d'=' -f2- | sed 's/Password=[^;]*/Password=****/g')"; \
+		echo "  $(GREEN)SA_PASSWORD$(NC)"; \
+		echo "    └─ Status: Configured"; \
+		echo "  $(GREEN)WEBAPP_USER_PASSWORD$(NC)"; \
+		echo "    └─ Status: Configured"; \
+		echo ""; \
+	else \
+		echo "$(YELLOW)[CREATING] .local file not found - creating with secure defaults...$(NC)"; \
+		echo "CS_MSSQL_CONN=Server=mssql;Database=WebAppDB;User Id=WebAppUser;Password=Local#Database!P@ssw0rd;TrustServerCertificate=true" > .local; \
+		echo "SA_PASSWORD=Local#Database!P@ssw0rd" >> .local; \
+		echo "WEBAPP_USER_PASSWORD=Local#Database!P@ssw0rd" >> .local; \
 		chmod 600 .local; \
-		$(call print_warning,"Default passwords created in .local - please customize them!"); \
+		echo "$(GREEN)[OK] .local file created$(NC)"; \
 	fi
-	@if [ ! -f .local.sh ]; then \
-		echo "Creating .local.sh environment file..."; \
-		echo 'export SA_PASSWORD="SecurePass123!"' > .local.sh; \
-		echo 'export MSSQL_SA_PASSWORD="SecurePass123!"' >> .local.sh; \
+	@if [ -f .local.sh ]; then \
+		echo "$(GREEN)[OK] .local.sh file exists$(NC)"; \
+		if [ -n "$$CS_MSSQL_CONN" ]; then \
+			echo "    └─ Environment: $(GREEN)Loaded$(NC) (variables available in current shell)"; \
+		else \
+			echo "    └─ Environment: $(YELLOW)Not loaded$(NC) (run: source .local.sh)"; \
+		fi; \
+	else \
+		echo "$(YELLOW)[CREATING] .local.sh file not found - creating...$(NC)"; \
+		echo "export CS_MSSQL_CONN='Server=mssql;Database=WebAppDB;User Id=WebAppUser;Password=Local#Database!P@ssw0rd;TrustServerCertificate=true'" > .local.sh; \
+		echo "export SA_PASSWORD='Local#Database!P@ssw0rd'" >> .local.sh; \
+		echo "export WEBAPP_USER_PASSWORD='Local#Database!P@ssw0rd'" >> .local.sh; \
 		chmod 600 .local.sh; \
+		echo "$(GREEN)[OK] .local.sh file created$(NC)"; \
+		echo "    └─ Environment: $(YELLOW)Not loaded$(NC) (run: source .local.sh)"; \
 	fi
+	@echo ""
+	@echo "$(BLUE)[SECURITY] Security Notes:$(NC)"
+	@echo "  - Default passwords are for development only - $(RED)never use in production$(NC)"
+	@echo "  - Files are created with 600 permissions (owner read/write only)"
+	@echo "  - Database uses TrustServerCertificate=true for local development"
+	@echo "  - Application user has minimal required database permissions"
+	@echo ""
+	@echo "$(BLUE)[NEXT STEPS] Getting Started:$(NC)"
+	@echo "  1. $(YELLOW)make build$(NC)  - Build Docker images with current configuration"
+	@echo "  2. $(YELLOW)make up$(NC)     - Start all services (database + web application)"
+	@echo "  3. $(YELLOW)make dev$(NC)    - Start database only (for local .NET development)"
+	@echo ""
+	@echo "$(BLUE)[TIPS] Customization:$(NC)"
+	@echo "  - Edit $(GREEN).local$(NC) to change database passwords or connection settings"
+	@echo "  - Run $(YELLOW)make clean$(NC) and $(YELLOW)make up$(NC) after password changes"
+	@echo "  - Use $(YELLOW)make status$(NC) to check service health"
+	@echo ""
 	$(call print_success,"Environment setup complete!")
-	$(call print_warning,"Remember to customize passwords in .local and .local.sh")
+	@if grep -q "Local.*Database.*P@ssw0rd" .local 2>/dev/null; then \
+		echo "$(YELLOW)[WARNING]$(NC) Using default passwords - consider customizing for enhanced security"; \
+	fi
 
 ## Build Docker images
 build:
-	$(call print_status,"Building Docker images...")
-	@cd deployments/compose && docker compose -f compose-localdb.yaml build
+	$(call print_status,"Building Docker images with $(COMPOSE_FILE)...")
+	@if echo "$(COMPOSE_FILE)" | grep -q "localdb"; then \
+		echo "$(YELLOW)📦 Building image: ghcr.io/timcrider/apps/compose-frontend$(NC)"; \
+	else \
+		echo "$(YELLOW)📦 Building image: ghcr.io/timcrider/apps/compose-server$(NC)"; \
+	fi
+	@cd deployments/compose && docker compose -f $(shell basename $(COMPOSE_FILE)) build
 	$(call print_success,"Docker images built successfully!")
 
 ## Start all services
@@ -157,13 +232,13 @@ up: setup
 	$(call print_success,"Services started successfully!")
 	@echo ""
 	@echo "$(BLUE)🌐 Application URLs:$(NC)"
-	@echo "  • Web App:  http://127.0.0.1:8080"
-	@echo "  • Database: 127.0.0.1:1433"
+	@echo "  - Web App:  http://127.0.0.1:8080"
+	@echo "  - Database: 127.0.0.1:1433"
 	@echo ""
 	@echo "$(BLUE)📋 Useful commands:$(NC)"
-	@echo "  • Check status: make status"
-	@echo "  • View logs:    make logs"
-	@echo "  • Stop:         make down"
+	@echo "  - Check status: make status"
+	@echo "  - View logs:    make logs"
+	@echo "  - Stop:         make down"
 
 ## Stop all services
 down:
@@ -194,8 +269,8 @@ dev: setup
 	@echo "  3. dotnet run"
 	@echo ""
 	@echo "$(BLUE)🗄️ Database connection:$(NC)"
-	@echo "  • Host: 127.0.0.1:1433"
-	@echo "  • SA Password: See .local file"
+	@echo "  - Host: 127.0.0.1:1433"
+	@echo "  - SA Password: See .local file"
 
 ## View service logs
 logs:
@@ -220,8 +295,8 @@ status:
 		echo "$(GREEN)✅ Services are running$(NC)"; \
 		echo ""; \
 		echo "$(BLUE)🌐 Access URLs:$(NC)"; \
-		echo "  • Web Application: http://127.0.0.1:8080"; \
-		echo "  • Database Server: 127.0.0.1:1433"; \
+		echo "  - Web Application: http://127.0.0.1:8080"; \
+		echo "  - Database Server: 127.0.0.1:1433"; \
 	else \
 		echo "$(YELLOW)⚠️  No services running$(NC)"; \
 		echo ""; \

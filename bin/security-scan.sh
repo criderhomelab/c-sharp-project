@@ -3,7 +3,18 @@
 set -e
 
 # Configuration
-IMAGE_NAME="mywebapp:latest"
+# Auto-detect which image to scan based on available images
+detect_image_name() {
+    if docker image inspect "ghcr.io/timcrider/apps/compose-frontend:latest" &> /dev/null; then
+        echo "ghcr.io/timcrider/apps/compose-frontend:latest"
+    elif docker image inspect "ghcr.io/timcrider/apps/compose-server:latest" &> /dev/null; then
+        echo "ghcr.io/timcrider/apps/compose-server:latest"
+    else
+        echo "mywebapp:latest"  # fallback for backward compatibility
+    fi
+}
+
+IMAGE_NAME=$(detect_image_name)
 REPORTS_DIR="./security-reports"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 BIN_DIR="./bin"
@@ -70,6 +81,8 @@ ensure_tool_installed() {
 check_image_exists() {
     if ! docker image inspect "$IMAGE_NAME" &> /dev/null; then
         log_error "Docker image '$IMAGE_NAME' not found. Please build the image first:"
+        echo "  make build    # Build using the project Makefile"
+        echo "  or"
         echo "  docker build -t $IMAGE_NAME ."
         exit 1
     fi
@@ -198,6 +211,7 @@ done
 
 # Main execution
 log_info "Starting security scan for image: $IMAGE_NAME"
+log_info "Using compose configuration with prefixed image names"
 
 check_image_exists
 create_reports_dir

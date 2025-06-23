@@ -4,6 +4,7 @@ services:
     build:
       context: ../../
       target: final
+    image: ghcr.io/timcrider/apps/compose-frontend
     env_file:
       - ../../.local
     environment:

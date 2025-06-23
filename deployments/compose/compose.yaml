@@ -12,6 +12,7 @@ services:
     build:
       context: ../../
       target: final
+    image: ghcr.io/timcrider/apps/compose-server
     environment:
       - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
       - ConnectionStrings__DefaultConnection=Server=db;Database=WebAppDB;User Id=WebAppUser;Password=WebApp_Password_123!;TrustServerCertificate=true;
