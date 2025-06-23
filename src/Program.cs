@@ -68,3 +68,6 @@ app.UseAuthorization();
 app.MapRazorPages();
 
 app.Run();
+
+// Make the implicit Program class public so it can be referenced by tests
+public partial class Program { }

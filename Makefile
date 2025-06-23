@@ -338,14 +338,22 @@ db-shell:
 ## Run unit and integration tests
 test:
 	$(call print_status,"Running tests...")
-	@if [ -d "$(SRC_DIR)/myWebApp.Tests" ]; then \
-		cd $(SRC_DIR) && dotnet test --logger "console;verbosity=normal"; \
+	@if [ -d "myWebApp.Tests" ]; then \
+		echo "$(GREEN)Found test project: myWebApp.Tests$(NC)"; \
+		echo "$(BLUE)Running tests with coverage and report generation...$(NC)"; \
+		dotnet test --logger "console;verbosity=normal" --logger "trx;LogFileName=TestResults.trx" --collect:"XPlat Code Coverage" --results-directory ./TestResults; \
+		echo "$(GREEN)✓ Tests completed$(NC)"; \
+		echo "$(BLUE)💡 Test results saved to: ./TestResults/$(NC)"; \
+		echo "$(BLUE)💡 TRX report: ./TestResults/TestResults.trx$(NC)"; \
+		if [ -d "./TestResults" ]; then \
+			find ./TestResults -name "*.xml" -o -name "*.trx" | head -5 | while read file; do \
+				echo "$(BLUE)📄 $$file$(NC)"; \
+			done; \
+		fi; \
 	else \
-		$(call print_warning,"No tests found. Test project not yet created."); \
-		echo "$(BLUE)💡 To add tests:$(NC)"; \
-		echo "  1. cd $(SRC_DIR)"; \
-		echo "  2. dotnet new xunit -n myWebApp.Tests"; \
-		echo "  3. Add test files and run 'make test' again"; \
+		$(call print_warning,"No tests found. Test project not found at: myWebApp.Tests"); \
+		echo "$(BLUE)💡 Test project already exists at: myWebApp.Tests$(NC)"; \
+		echo "$(BLUE)💡 Run 'dotnet sln list' to see all projects$(NC)"; \
 	fi
 
 ## Run comprehensive security scans
