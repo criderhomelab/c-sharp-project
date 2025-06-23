@@ -27,4 +27,14 @@ bld/
 security-reports/*
 !security-reports/.gitkeep
 
+# Test results and coverage reports - ignore all files but keep the directory
+TestResults/*
+!TestResults/.gitkeep
+
+# Test file patterns (can appear anywhere)
+*.trx
+coverage.*.xml
+*.lcov
+*.cobertura.xml
+
 .fake

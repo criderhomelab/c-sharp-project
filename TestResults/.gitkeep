@@ -1,0 +1,11 @@
+# This file keeps the TestResults directory in version control
+# while ignoring all test output files via .gitignore
+
+Test results and coverage reports are generated here by:
+- make test
+- dotnet test --collect:"XPlat Code Coverage"
+
+Generated files include:
+- *.trx (test result files)
+- coverage.cobertura.xml (code coverage reports)
+- Various test runner output directories
