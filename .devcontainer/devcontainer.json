@@ -40,23 +40,8 @@
     },
 
     "features": {
-        // Docker Outside of Docker (DooD) - RECOMMENDED for Apple Silicon
-        // Uses the host's Docker daemon directly, avoiding nested containerization issues.
-        // Better performance and compatibility with Docker Desktop on macOS.
-        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
-            "version": "latest",
-            "installDockerBuildx": true
-        },
-        
-        // Docker in Docker (DinD) - COMMENTED OUT due to Apple Silicon issues
-        // Runs a separate Docker daemon inside the container. Can cause "broken pipe" 
-        // errors on Apple Silicon due to runc runtime conflicts with nested containers.
-        // Uncomment below and comment out docker-outside-of-docker if needed for specific use cases.
-        // "ghcr.io/devcontainers/features/docker-in-docker:2": {
-        //     "version": "latest",
-        //     "dockerDashComposeVersion": "v2",
-        //     "installDockerBuildx": true
-        // },
+        // Docker features will be conditionally installed via postCreateCommand
+        // based on host OS detection to optimize for different platforms
         
         "ghcr.io/devcontainers/features/git:1": {"version": "latest"},
 //        "ghcr.io/devcontainers/features/github-cli:1": {"version": "latest"},
@@ -76,9 +61,10 @@
     },
     // Additional settings for Apple Silicon compatibility
     "runArgs": [
-        "--privileged"
+        "--privileged",
+        "--sysctl", "net.ipv6.conf.all.disable_ipv6=1"
     ],
 
-    // Post-create command to configure Docker for Apple Silicon
-    "postCreateCommand": "bash -c 'echo \"Configuring Docker for Apple Silicon compatibility...\" && docker --version && echo \"export DOCKER_DEFAULT_PLATFORM=linux/amd64\" >> ~/.bashrc'"
+    // Post-create command with conditional Docker setup based on host OS
+    "postCreateCommand": "/workspaces/.devcontainer/setup-docker.sh"
 }

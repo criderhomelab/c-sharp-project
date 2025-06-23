@@ -16,8 +16,10 @@ services:
       - ../../.local
     environment:
       - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+      - ASPNETCORE_URLS=http://0.0.0.0:8080
+      - DOTNET_SYSTEM_NET_DISABLEIPV6=true
     ports:
-      - 8080:8080
+      - "127.0.0.1:8080:8080"
     depends_on:
       mssql:
         condition: service_healthy
@@ -27,15 +29,16 @@ services:
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
     ports:
-      - 1433:1433
+      - "127.0.0.1:1433:1433"
     env_file:
       - ../../.local
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=${LOCAL_SA_PASSWORD}
       - MSSQL_PID=Express
+      - MSSQL_TCP_PORT=1433
+      - MSSQL_IP_ADDRESS=0.0.0.0
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $${SA_PASSWORD} -No -C -Q 'SELECT 1' || exit 1"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -U sa -P $${SA_PASSWORD} -No -C -Q 'SELECT 1' || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 10
@@ -52,29 +55,13 @@ services:
       - ../../.local
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=${LOCAL_SA_PASSWORD}
-    volumes: []
+    volumes:
+      - ./mssql/setup_mssql_things.sql:/setup_mssql_things.sql:ro
+      - ./mssql/setup_robust.sh:/setup_robust.sh:ro
     command: >
       bash -c "
-        echo 'Waiting for SQL Server to be ready...'
-        sleep 5
-        echo 'Creating login and database...'
-        /opt/mssql-tools18/bin/sqlcmd -S mssql -U sa -P ${LOCAL_SA_PASSWORD} -No -C -Q \"CREATE LOGIN WebAppUser WITH PASSWORD='${WEBAPP_USER_PASSWORD}';\"
-        /opt/mssql-tools18/bin/sqlcmd -S mssql -U sa -P ${LOCAL_SA_PASSWORD} -No -C -Q \"CREATE DATABASE WebAppDB;\"
-        echo 'Creating table and user...'
-        /opt/mssql-tools18/bin/sqlcmd -S mssql -U sa -P ${LOCAL_SA_PASSWORD} -No -C -d WebAppDB -Q \"
-        CREATE TABLE things (
-          id INT PRIMARY KEY IDENTITY (1, 1),
-          created_on DATETIME NOT NULL DEFAULT GETDATE(),
-          name VARCHAR (50) NOT NULL,
-          purpose VARCHAR(255) NOT NULL,
-          last_modified DATETIME NOT NULL
-        );
-        CREATE USER WebAppUser FOR LOGIN WebAppUser;
-        GRANT SELECT, INSERT, UPDATE, DELETE ON things TO WebAppUser;
-        INSERT INTO things (name, purpose, last_modified) VALUES ('WebAppUser', 'Web Application User', GETDATE());
-        \"
-        echo 'Database setup complete!'
+        chmod +x /setup_robust.sh
+        /setup_robust.sh
       "
     restart: "no"
 
@@ -114,4 +101,15 @@ services:
 
 volumes:
   mssql_data:
+
+networks:
+  default:
+    enable_ipv6: false
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
 
