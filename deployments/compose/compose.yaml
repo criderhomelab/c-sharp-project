@@ -12,43 +12,67 @@ services:
     build:
       context: ../../
       target: final
-    env_file:
-      - ../../.secret
     environment:
       - DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+      - ConnectionStrings__DefaultConnection=Server=db;Database=WebAppDB;User Id=WebAppUser;Password=WebApp_Password_123!;TrustServerCertificate=true;
     ports:
       - 8080:8080
+    depends_on:
+      db:
+        condition: service_healthy
+      db-setup:
+        condition: service_completed_successfully
+        
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: always
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Your_Password_123!
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+      - ./init-db.sql:/tmp/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P Your_Password_123! -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+      
+  db-setup:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./init-db.sql:/tmp/init-db.sql:ro
+    command: |
+      bash -c "
+      echo 'Waiting for SQL Server to be ready...';
+      sleep 10;
+      echo 'Testing connection to SQL Server...';
+      /opt/mssql-tools18/bin/sqlcmd -S db -U sa -P Your_Password_123! -C -Q 'SELECT @@VERSION' -o /tmp/version.txt;
+      if [ \$$? -eq 0 ]; then
+        echo 'Connection successful! Running database initialization...';
+        /opt/mssql-tools18/bin/sqlcmd -S db -U sa -P Your_Password_123! -C -i /tmp/init-db.sql -o /tmp/init-output.txt;
+        if [ \$$? -eq 0 ]; then
+          echo 'Database initialization completed successfully!';
+          cat /tmp/init-output.txt;
+        else
+          echo 'Database initialization failed!';
+          cat /tmp/init-output.txt;
+          exit 1;
+        fi;
+      else
+        echo 'Failed to connect to SQL Server!';
+        cat /tmp/version.txt;
+        exit 1;
+      fi;
+      "
+    restart: "no"
 
-# The commented out section below is an example of how to define a PostgreSQL
-# database that your application can use. `depends_on` tells Docker Compose to
-# start the database before your application. The `db-data` volume persists the
-# database data between container restarts. The `db-password` secret is used
-# to set the database password. You must create `db/password.txt` and add
-# a password of your choosing to it before running `docker compose up`.
-#     depends_on:
-#       db:
-#         condition: service_healthy
-#   db:
-#     image: postgres
-#     restart: always
-#     user: postgres
-#     secrets:
-#       - db-password
-#     volumes:
-#       - db-data:/var/lib/postgresql/data
-#     environment:
-#       - POSTGRES_DB=example
-#       - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
-#     expose:
-#       - 5432
-#     healthcheck:
-#       test: [ "CMD", "pg_isready" ]
-#       interval: 10s
-#       timeout: 5s
-#       retries: 5
-# volumes:
-#   db-data:
-# secrets:
-#   db-password:
-#     file: db/password.txt
-
+volumes:
+  mssql-data:

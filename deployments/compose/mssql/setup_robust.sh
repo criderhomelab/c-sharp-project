@@ -111,6 +111,22 @@ FROM WebAppDB.sys.objects WHERE object_id = OBJECT_ID(N'WebAppDB.[dbo].[things]'
 SELECT 'User exists: ' + CAST(COUNT(*) AS VARCHAR) AS UserCheck 
 FROM WebAppDB.sys.database_principals WHERE name = 'WebAppUser';
 GO
+
+-- Insert sample data if the table is empty
+IF NOT EXISTS (SELECT 1 FROM things)
+BEGIN
+    PRINT 'Inserting sample data...';
+    INSERT INTO things (name, purpose, last_modified) VALUES 
+        ('Sample Item 1', 'Demonstration purpose', GETDATE()),
+        ('Sample Item 2', 'Testing database connectivity', GETDATE()),
+        ('Docker Container', 'Containerized database example', GETDATE());
+    PRINT 'Sample data inserted successfully.';
+END
+ELSE
+BEGIN
+    PRINT 'Sample data already exists.';
+END
+GO
 EOF
 
 # Replace the password placeholder with the actual password (properly escaped)
