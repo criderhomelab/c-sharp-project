@@ -333,7 +333,8 @@ db-shell:
 	@if [ ! -f .local ]; then $(call print_error,".local file not found. Run 'make setup' first."); exit 1; fi
 	@echo "$(BLUE)💡 Connecting to SQL Server...$(NC)"
 	@echo "$(BLUE)💡 Use 'quit' to exit$(NC)"
-	@cd deployments/compose && docker exec -it $(DB_CONTAINER) /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "$$(grep SA_PASSWORD ../../.local | cut -d'=' -f2)"
+	@SA_PASS=$$(awk -F= '/^SA_PASSWORD/ {print $$2}' .local); \
+	cd deployments/compose && docker exec -it $(DB_CONTAINER) /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$SA_PASS" -C
 
 ## Run unit and integration tests
 test:

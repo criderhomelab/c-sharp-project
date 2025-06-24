@@ -1,6 +1,6 @@
 using Microsoft.Data.SqlClient;
 
-var connectionString = "Server=ironforge.home.criders.org;Database=WebAppDB;User Id=sa;Password=!!2pacSecure!!;TrustServerCertificate=true;";
+var connectionString = "Server=ironforge.home.criders.org;Database=WebAppDB;User Id=sa;Password=$PASSWORD;TrustServerCertificate=true;";
 
 using var connection = new SqlConnection(connectionString);
 connection.Open();
