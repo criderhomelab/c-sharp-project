@@ -48,12 +48,84 @@ services:
       - ../../.local
     environment:
       - ACCEPT_EULA=Y
-    volumes:
-      - ./mssql/setup_robust.sh:/setup_robust.sh:ro
     command: >
       bash -c "
-        chmod +x /setup_robust.sh
-        /setup_robust.sh
+        echo 'Starting SQL Server database setup...'
+        sleep 5
+        
+        echo 'Testing SQL Server connectivity...'
+        RETRY_COUNT=0
+        MAX_RETRIES=30
+        while ! /opt/mssql-tools18/bin/sqlcmd -S mssql -U sa -P \"$$SA_PASSWORD\" -No -C -Q \"SELECT 1\" >/dev/null 2>&1; do
+          RETRY_COUNT=$$((RETRY_COUNT + 1))
+          if [ $$RETRY_COUNT -ge $$MAX_RETRIES ]; then
+            echo 'ERROR: SQL Server did not become ready after $$MAX_RETRIES attempts'
+            exit 1
+          fi
+          echo \"SQL Server not ready yet, waiting... (attempt $$RETRY_COUNT/$$MAX_RETRIES)\"
+          sleep 2
+        done
+        
+        echo 'SQL Server is ready! Creating database and user...'
+        
+        /opt/mssql-tools18/bin/sqlcmd -S mssql -U sa -P \"$$SA_PASSWORD\" -No -C -Q \"
+        -- Drop existing login if it exists
+        IF EXISTS (SELECT * FROM sys.server_principals WHERE name = 'WebAppUser')
+          DROP LOGIN WebAppUser;
+        
+        -- Create login with password
+        CREATE LOGIN WebAppUser WITH PASSWORD=N'$$WEBAPP_USER_PASSWORD', CHECK_POLICY=OFF, CHECK_EXPIRATION=OFF;
+        PRINT 'WebAppUser login created successfully';
+        
+        -- Create database if it doesn't exist
+        IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'WebAppDB')
+          CREATE DATABASE WebAppDB;
+        PRINT 'WebAppDB database ready';
+        \"
+        
+        echo 'Setting up database schema and permissions...'
+        
+        /opt/mssql-tools18/bin/sqlcmd -S mssql -U sa -P \"$$SA_PASSWORD\" -No -C -d WebAppDB -Q \"
+        -- Create table if it doesn't exist
+        IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[things]') AND type in (N'U'))
+        BEGIN
+          CREATE TABLE things (
+            id INT PRIMARY KEY IDENTITY (1, 1),
+            created_on DATETIME NOT NULL DEFAULT GETDATE(),
+            name VARCHAR (50) NOT NULL,
+            purpose VARCHAR(255) NOT NULL,
+            last_modified DATETIME NOT NULL
+          );
+          PRINT 'things table created';
+        END
+        
+        -- Create database user if it doesn't exist
+        IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = 'WebAppUser')
+        BEGIN
+          CREATE USER WebAppUser FOR LOGIN WebAppUser;
+          PRINT 'WebAppUser database user created';
+        END
+        
+        -- Grant permissions
+        GRANT SELECT, INSERT, UPDATE, DELETE ON dbo.things TO WebAppUser;
+        GRANT CREATE TABLE TO WebAppUser;
+        ALTER ROLE db_datareader ADD MEMBER WebAppUser;
+        ALTER ROLE db_datawriter ADD MEMBER WebAppUser;
+        PRINT 'Permissions granted to WebAppUser';
+        
+        -- Insert sample data if table is empty
+        IF NOT EXISTS (SELECT 1 FROM things)
+        BEGIN
+          PRINT 'Inserting sample data...';
+          INSERT INTO things (name, purpose, last_modified) VALUES 
+            ('Sample Item 1', 'Demonstration purpose', GETDATE()),
+            ('Sample Item 2', 'Testing database connectivity', GETDATE()),
+            ('Docker Container', 'Containerized database example', GETDATE());
+          PRINT 'Sample data inserted successfully.';
+        END
+        \"
+        
+        echo '✅ Database setup completed successfully!'
       "
     restart: "no"
 
