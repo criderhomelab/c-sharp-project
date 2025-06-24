@@ -1,26 +1,23 @@
 # 🚀 Secure ASP.NET Core Web Application
 
-A **production-ready ASP.NET Core 8.0** web application featuri├── docs/
-│   ├── GETTING_STARTED.md       # Detailed setup guide
-│   ├── SECURITY.md              # Security documentation
-│   ├── SECURITY_SCANNING.md     # Security scanning tools guide
-│   ├── SECURITY_SCANNING_REPORT.md # Security scan results and analysis
-│   ├── TEST_COVERAGE_REPORT.md  # Test results and coverage analysis
-│   ├── CHANGELOG.md             # Version history and updates
-│   ├── PURPOSE.md               # Project purpose and goals
-│   ├── test-results/            # Archived test execution results
-│   │   ├── TestResults.trx      # Test execution report
-│   │   ├── coverage.cobertura.xml # Code coverage data
-│   │   └── README.md            # How to view test results
-│   └── security-results/        # Archived security scan results
-│       ├── trivy_*.json         # Trivy vulnerability scans
-│       ├── grype_*.json         # Grype security analysis
-│       ├── snyk_*.json          # Snyk security reports
-│       └── README.md            # How to view security resultsprehensive CRUD operations, robust testing infrastructure, and enterprise-grade security features.
+A **production-ready ASP.NET Core 8.0** web application featuring comprehensive CRUD operations, robust testing infrastructure, and enterprise-grade security features.
+
+## 📋 Table of Contents - Key Documents for Review
+
+| Document | Purpose | Target Audience |
+|----------|---------|----------------|
+| **[🎯 Project Purpose](PURPOSE.md)** | Why this project exists and what it demonstrates | **Hiring Managers & Technical Interviewers** |
+| **[📖 Getting Started Guide](GETTING_STARTED.md)** | Complete setup and development workflow | **DevOps Engineers & Developers** |
+| **[🧪 Test Coverage Report](docs/TEST_COVERAGE_REPORT.md)** | Comprehensive test analysis (17 tests, 100% pass rate) | **QA Engineers & Technical Leaders** |
+| **[🛡️ Security Scanning Report](docs/SECURITY_SCANNING_REPORT.md)** | Multi-tool vulnerability assessment | **Security Engineers & Architects** |
+| **[📝 Changelog](CHANGELOG.md)** | Version history and feature evolution | **Product Managers & Technical Reviewers** |
+| **[🔒 Security Documentation](docs/SECURITY.md)** | Security implementation details | **Security Teams & Compliance** |
+
+---
 
 ## ✨ Key Features
 
-- � **Security-First**: IPv6 disabled, environment-based secrets, minimal attack surface
+- 🛡️ **Security-First**: IPv6 disabled, environment-based secrets, minimal attack surface
 - 🧪 **100% Test Coverage**: Unit tests, integration tests, and code coverage reporting
 - 🐳 **Container-Ready**: Docker support with devcontainer development environment
 - 📊 **Database Management**: Full CRUD operations for "Things" entity with SQL Server
@@ -62,7 +59,6 @@ cp .local.example .local
 # 3. Start the application
 make run
 ```
-   ```
 
 ## 📋 Available Commands
 
@@ -79,7 +75,6 @@ make clean     # Clean up containers and volumes
 make db        # Access database shell
 make logs      # View application logs
 ```
-
 ## 🧪 Testing Infrastructure
 
 The project includes a comprehensive test suite:
