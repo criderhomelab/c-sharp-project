@@ -103,8 +103,12 @@ Test reports and coverage data are saved to `./TestResults/`.
 ├── deployments/compose/          # Docker Compose configurations
 ├── bin/                          # Setup and utility scripts
 ├── .devcontainer/               # VS Code devcontainer configuration
-├── GETTING_STARTED.md           # Detailed setup guide
-├── SECURITY.md                  # Security documentation
+├── docs/
+│   ├── GETTING_STARTED.md       # Detailed setup guide
+│   ├── SECURITY.md              # Security documentation
+│   ├── SECURITY_SCANNING.md     # Security scanning tools guide
+│   ├── CHANGELOG.md             # Version history and updates
+│   └── PURPOSE.md               # Project purpose and goals
 └── Makefile                     # Build and development automation
 ```
 
@@ -161,10 +165,11 @@ make security  # Run all security scans
 
 ## 📚 Documentation
 
-- 📖 **[Getting Started Guide](GETTING_STARTED.md)** - Comprehensive setup instructions
-- 🔒 **[Security Documentation](SECURITY.md)** - Security implementation details  
-- 🔍 **[Security Scanning Guide](SECURITY_SCANNING.md)** - Vulnerability scanning tools
-- 📝 **[Changelog](CHANGELOG.md)** - Version history and updates
+- 📖 **[Getting Started Guide](docs/GETTING_STARTED.md)** - Comprehensive setup instructions
+- 🔒 **[Security Documentation](docs/SECURITY.md)** - Security implementation details  
+- 🔍 **[Security Scanning Guide](docs/SECURITY_SCANNING.md)** - Vulnerability scanning tools
+- 📝 **[Changelog](docs/CHANGELOG.md)** - Version history and updates
+- 🎯 **[Project Purpose](docs/PURPOSE.md)** - Project goals and objectives
 
 ## 🚀 Production Deployment
 
@@ -207,4 +212,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-**💡 Need help?** Check the [Getting Started Guide](GETTING_STARTED.md) or [Troubleshooting Section](GETTING_STARTED.md#-troubleshooting) for detailed setup instructions and common solutions.
+**💡 Need help?** Check the [Getting Started Guide](docs/GETTING_STARTED.md) or [Troubleshooting Section](docs/GETTING_STARTED.md#-troubleshooting) for detailed setup instructions and common solutions.
