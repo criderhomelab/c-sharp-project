@@ -40,12 +40,12 @@
     },
 
     "features": {
-        // Docker features will be conditionally installed via postCreateCommand
-        // based on host OS detection to optimize for different platforms
-        
+        // Docker-outside-of-Docker (DooD) - uses host Docker daemon
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+            "version": "latest",
+            "enableNonRootDocker": "false"
+        },
         "ghcr.io/devcontainers/features/git:1": {"version": "latest"},
-//        "ghcr.io/devcontainers/features/github-cli:1": {"version": "latest"},
-//        "ghcr.io/devcontainers/features/go:1": {"version": "latest"},
         "ghcr.io/devcontainers/features/python:1": {"version": "os-provided"},
         "ghcr.io/devcontainers/features/node:1": {"version": "lts"}
     },
@@ -65,6 +65,6 @@
         "--sysctl", "net.ipv6.conf.all.disable_ipv6=1"
     ],
 
-    // Post-create command with conditional Docker setup based on host OS
-    "postCreateCommand": "/workspaces/.devcontainer/setup-docker.sh"
+    // Simple post-create setup - Docker is installed via feature above
+    "postCreateCommand": "echo '✅ Devcontainer ready! Docker should be available.'"
 }
