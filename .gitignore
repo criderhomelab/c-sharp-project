@@ -38,3 +38,4 @@ coverage.*.xml
 *.cobertura.xml
 
 .fake
+.env
