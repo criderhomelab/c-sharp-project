@@ -1,0 +1,13 @@
+
+Testing ghcr.io/timcrider/apps/compose-frontend:latest...
+
+Organization:      timcrider-BNA2Bg8Q4KzW5o7W28J5Us
+Package manager:   apk
+Project name:      docker-image|ghcr.io/timcrider/apps/compose-frontend
+Docker image:      ghcr.io/timcrider/apps/compose-frontend:latest
+Platform:          linux/amd64
+Licenses:          enabled
+
+✔ Tested 19 dependencies for known issues, no vulnerable paths found.
+
+

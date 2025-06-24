@@ -1,6 +1,22 @@
 # 🚀 Secure ASP.NET Core Web Application
 
-A **production-ready ASP.NET Core 8.0** web application featuring comprehensive CRUD operations, robust testing infrastructure, and enterprise-grade security features.
+A **production-ready ASP.NET Core 8.0** web application featuri├── docs/
+│   ├── GETTING_STARTED.md       # Detailed setup guide
+│   ├── SECURITY.md              # Security documentation
+│   ├── SECURITY_SCANNING.md     # Security scanning tools guide
+│   ├── SECURITY_SCANNING_REPORT.md # Security scan results and analysis
+│   ├── TEST_COVERAGE_REPORT.md  # Test results and coverage analysis
+│   ├── CHANGELOG.md             # Version history and updates
+│   ├── PURPOSE.md               # Project purpose and goals
+│   ├── test-results/            # Archived test execution results
+│   │   ├── TestResults.trx      # Test execution report
+│   │   ├── coverage.cobertura.xml # Code coverage data
+│   │   └── README.md            # How to view test results
+│   └── security-results/        # Archived security scan results
+│       ├── trivy_*.json         # Trivy vulnerability scans
+│       ├── grype_*.json         # Grype security analysis
+│       ├── snyk_*.json          # Snyk security reports
+│       └── README.md            # How to view security resultsprehensive CRUD operations, robust testing infrastructure, and enterprise-grade security features.
 
 ## ✨ Key Features
 
@@ -108,7 +124,9 @@ Test reports and coverage data are saved to `./TestResults/`.
 │   ├── SECURITY.md              # Security documentation
 │   ├── SECURITY_SCANNING.md     # Security scanning tools guide
 │   ├── CHANGELOG.md             # Version history and updates
-│   └── PURPOSE.md               # Project purpose and goals
+│   ├── PURPOSE.md               # Project purpose and goals
+│   ├── TEST_COVERAGE_REPORT.md  # Comprehensive test analysis
+│   └── SECURITY_SCANNING_REPORT.md  # Multi-tool security assessment
 └── Makefile                     # Build and development automation
 ```
 
@@ -168,8 +186,15 @@ make security  # Run all security scans
 - 📖 **[Getting Started Guide](docs/GETTING_STARTED.md)** - Comprehensive setup instructions
 - 🔒 **[Security Documentation](docs/SECURITY.md)** - Security implementation details  
 - 🔍 **[Security Scanning Guide](docs/SECURITY_SCANNING.md)** - Vulnerability scanning tools
-- 📝 **[Changelog](docs/CHANGELOG.md)** - Version history and updates
+- �️ **[Security Scan Report](docs/SECURITY_SCANNING_REPORT.md)** - Current security analysis results
+- 🧪 **[Test Coverage Report](docs/TEST_COVERAGE_REPORT.md)** - Test execution and coverage analysis
+- �📝 **[Changelog](docs/CHANGELOG.md)** - Version history and updates
 - 🎯 **[Project Purpose](docs/PURPOSE.md)** - Project goals and objectives
+
+## 📊 Quality Assurance Reports
+
+- 🧪 **[Test Coverage Report](docs/TEST_COVERAGE_REPORT.md)** - Comprehensive test analysis and coverage metrics
+- 🛡️ **[Security Scanning Report](docs/SECURITY_SCANNING_REPORT.md)** - Multi-tool vulnerability assessment and remediation guidance
 
 ## 🚀 Production Deployment
 
