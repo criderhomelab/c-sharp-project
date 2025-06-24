@@ -12,7 +12,7 @@ services:
       - ASPNETCORE_URLS=http://0.0.0.0:8080
       - DOTNET_SYSTEM_NET_DISABLEIPV6=true
     ports:
-      - "127.0.0.1:8080:8080"
+      - "8080:8080"
     depends_on:
       mssql:
         condition: service_healthy
