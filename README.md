@@ -6,11 +6,11 @@ A **production-ready ASP.NET Core 8.0** web application featuring comprehensive 
 
 | Document | Purpose | Target Audience |
 |----------|---------|----------------|
-| **[🎯 Project Purpose](PURPOSE.md)** | Why this project exists and what it demonstrates | **Hiring Managers & Technical Interviewers** |
-| **[📖 Getting Started Guide](GETTING_STARTED.md)** | Complete setup and development workflow | **DevOps Engineers & Developers** |
+| **[🎯 Project Purpose](docs/PURPOSE.md)** | Why this project exists and what it demonstrates | **Hiring Managers & Technical Interviewers** |
+| **[📖 Getting Started Guide](docs/GETTING_STARTED.md)** | Complete setup and development workflow | **DevOps Engineers & Developers** |
 | **[🧪 Test Coverage Report](docs/TEST_COVERAGE_REPORT.md)** | Comprehensive test analysis (17 tests, 100% pass rate) | **QA Engineers & Technical Leaders** |
 | **[🛡️ Security Scanning Report](docs/SECURITY_SCANNING_REPORT.md)** | Multi-tool vulnerability assessment | **Security Engineers & Architects** |
-| **[📝 Changelog](CHANGELOG.md)** | Version history and feature evolution | **Product Managers & Technical Reviewers** |
+| **[📝 Changelog](docs/CHANGELOG.md)** | Version history and feature evolution | **Product Managers & Technical Reviewers** |
 | **[🔒 Security Documentation](docs/SECURITY.md)** | Security implementation details | **Security Teams & Compliance** |
 
 ---
